@@ -20,8 +20,16 @@ end
 namespace '/api' do
   post '/quotes' do
     command_text = params['text']
-    text = command_text.match(/".*?"/)[0]
-    author = command_text.match(/-\s(.*?)$/)[0]
+    text = command_text.match(/".*?"/).try(:[], 0)
+    author = command_text.match(/-\s(.*?)$/).try(:[], 0)
+
+    unless text && author
+      return {
+          'response_type': 'ephemeral',
+          'text': 'Invalid format use "SOME QUOTE" - @AUTHOR'
+        }.to_json
+    end
+
     quote = Quote.create(text: text, author: author)
 
     {
