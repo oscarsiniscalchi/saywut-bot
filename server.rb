@@ -17,29 +17,37 @@ class Quote
   index({ text: 'text' })
 end
 
+module Errors
+  def self.empty_text
+    {
+      'response_type': 'ephemeral',
+      'text': 'Please provide a quote and author'
+    }.to_json
+  end
+
+  def self.invalid_text
+    {
+      'response_type': 'ephemeral',
+      'text': 'Invalid format use "SOME QUOTE" - @AUTHOR'
+    }.to_json
+  end
+end
+
 namespace '/api' do
   post '/quotes' do
-    command_text = params['text']
-    text = command_text.match(/".*?"/).try(:[], 0)
-    author = command_text.match(/-\s(.*?)$/).try(:[], 0)
+    command_text = params['text'] or return Errors.empty_text
 
-    unless text && author
-      return {
-          'response_type': 'ephemeral',
-          'text': 'Invalid format use "SOME QUOTE" - @AUTHOR'
-        }.to_json
-    end
+    text   = command_text.match(/(^.*?)-/).try(:[], 1)
+    author = command_text.match(/-\s?(.*?)$/).try(:[], 1)
+
+    return Errors.invalid_text unless text && author
 
     quote = Quote.create(text: text, author: author)
 
     {
       'response_type': 'ephemeral',
       'text': quote.text,
-      'attachments': [
-          {
-              'text': "#{quote.author} / #{quote.id}"
-          }
-      ]
+      'attachments': [{ 'text': "#{quote.author}" }]
     }.to_json
 
   end
