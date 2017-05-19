@@ -3,7 +3,7 @@ require 'sinatra/namespace'
 require 'mongoid'
 
 # DB Setup
-Mongoid.load! "mongoid.config"
+Mongoid.load! "mongoid.yml"
 
 class Quote
   include Mongoid::Document
