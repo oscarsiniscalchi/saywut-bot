@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'sinatra/namespace'
 require 'mongoid'
+require 'json'
 
 # DB Setup
 Mongoid.load! "mongoid.yml"
@@ -35,6 +36,7 @@ end
 
 namespace '/api' do
   post '/quotes' do
+    content_type :json
     command_text = params['text'] or return Errors.empty_text
 
     text   = command_text.match(/(^.*?)-/).try(:[], 1)
@@ -53,6 +55,7 @@ namespace '/api' do
   end
 
   post '/quotes/random' do
+    content_type :json
     quote = Quote.all.sample
 
     {
