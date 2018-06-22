@@ -54,6 +54,21 @@ namespace '/api' do
 
   end
 
+  post '/quotes/last' do
+    content_type :json
+    quote = Quote.last
+
+    {
+      'response_type': 'in_channel',
+      'text': quote.text,
+      'attachments': [
+          {
+              'text': quote.author
+          }
+      ]
+    }.to_json
+  end
+
   post '/quotes/random' do
     content_type :json
     quote = Quote.all.sample
