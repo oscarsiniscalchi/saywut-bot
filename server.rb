@@ -47,7 +47,7 @@ namespace '/api' do
     quote = Quote.create(text: text, author: author)
 
     {
-      'response_type': 'ephemeral',
+      'response_type': 'in_channel',
       'text': quote.text,
       'attachments': [{ 'text': "#{quote.author}" }]
     }.to_json
