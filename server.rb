@@ -39,12 +39,15 @@ namespace '/api' do
     content_type :json
     command_text = params['text'] or return Errors.empty_text
 
-    text   = command_text.match(/(^.*?)-/).try(:[], 1)
-    author = command_text.match(/-\s?(.*?)$/).try(:[], 1)
-
-    return Errors.invalid_text unless text && author
+    regex = /(.*?)-(?!.*-)(.*?$)/
+    data   = command_text.match(regex)
+    return Errors.invalid_text unless data && data[1] && data[2]
+    text   = data[1]
+    author = data[2]
 
     quote = Quote.create(text: text, author: author)
+
+    return Errors.empty_text unless quote.valid?
 
     {
       'response_type': 'in_channel',
