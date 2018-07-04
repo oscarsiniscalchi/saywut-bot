@@ -1,0 +1,8 @@
+!!!
+%html
+  %head
+    %title What!? Say What again. I dare you! Double dare you mother fucker!
+  %body
+    %h1 Quotes
+    - quotes.each do |quote|
+      %li= "#{quote.text} - #{quote.author} > #{quote.submitted_by}"

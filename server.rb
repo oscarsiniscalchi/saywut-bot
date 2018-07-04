@@ -2,6 +2,21 @@ require 'sinatra'
 require 'sinatra/namespace'
 require 'mongoid'
 require 'json'
+require 'haml'
+
+helpers do
+  def protected!
+    return if authorized?
+    headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+    halt 401, "Not authorized\n"
+  end
+
+  def authorized?
+    @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+    creds = [ENV['ADMIN_USERNAME'], ENV['ADMIN_PASSWORD']]
+    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == creds
+  end
+end
 
 # DB Setup
 Mongoid.load! "mongoid.yml"
@@ -11,6 +26,7 @@ class Quote
 
   field :text, type: String
   field :author, type: String
+  field :submitted_by, type: String
 
   validates :text, presence: true
   validates :author, presence: true
@@ -45,7 +61,7 @@ namespace '/api' do
     text   = data[1]
     author = data[2]
 
-    quote = Quote.create(text: text, author: author)
+    quote = Quote.create(text: text, author: author, submitted_by: params['user_name'])
 
     return Errors.empty_text unless quote.valid?
 
@@ -85,5 +101,10 @@ namespace '/api' do
           }
       ]
     }.to_json
+  end
+
+  get '/admin' do
+    protected!
+    haml :admin, locals: { quotes: Quote.all }
   end
 end
